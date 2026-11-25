@@ -368,13 +368,10 @@ Note that the [Mozilla TLS Profiles](https://wiki.mozilla.org/Security/Server_Si
 align with the runtime behavior of Go-based OpenShift components and to enable
 post-quantum hybrid key exchange where supported.
 
-**FIPS mode constraint:** Upstream Go 1.26 drops standalone `X25519` in FIPS
-mode and [allows `X25519MLKEM768`](https://github.com/golang/go/blob/go1.26.0/src/crypto/tls/defaults_fips140.go#L33-L40)
-with a strict-mode handshake [fix in Go 1.26.3](https://github.com/golang/go/issues/78372).
-[NIST guidance](https://csrc.nist.gov/csrc/media/Projects/cryptographic-module-validation-program/documents/fips%20140-3/FIPS%20140-3%20IG.pdf#page=230)
-allows the hybrid when the module meets its validation requirements. Verify
-the shipped TLS implementation and module policy before relying on runtime
-filtering for default or explicitly configured groups.
+**FIPS mode constraint:** Standalone `X25519` is not FIPS-approved.
+Components running in FIPS mode must omit it. The FIPS-approved
+post-quantum alternatives (`SecP256r1MLKEM768`, `SecP384r1MLKEM1024`) require
+Go 1.26+ and are not currently supported.
 
 **Library-go update:** To support these defaults, the `TLSProfiles` mapping in
 [library-go](https://github.com/openshift/library-go) will be updated to include
