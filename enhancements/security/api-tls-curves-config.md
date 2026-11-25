@@ -368,23 +368,13 @@ Note that the [Mozilla TLS Profiles](https://wiki.mozilla.org/Security/Server_Si
 align with the runtime behavior of Go-based OpenShift components and to enable
 post-quantum hybrid key exchange where supported.
 
-**FIPS mode constraint:** Upstream Go 1.26 filters standalone `X25519` out of
-TLS group preferences in FIPS mode, including when a component explicitly
-configures it. The
-[upstream FIPS TLS allowlist](https://github.com/golang/go/blob/go1.26.0/src/crypto/tls/defaults_fips140.go#L33-L40)
-includes the hybrid `X25519MLKEM768`. Go 1.26.3
-[fixed a handshake failure](https://github.com/golang/go/issues/78372) for this
-hybrid in strict FIPS mode (`GODEBUG=fips140=only`). Upstream Go 1.26 also
-[enables](https://go.dev/doc/go1.26#crypto/tls) `SecP256r1MLKEM768` and
-`SecP384r1MLKEM1024` by default.
-
-`X25519MLKEM768` can qualify as an approved TLS 1.3 hybrid key exchange under
-[NIST FIPS 140-3 Implementation Guidance D.S, Scenario 2](https://csrc.nist.gov/csrc/media/Projects/cryptographic-module-validation-program/documents/fips%20140-3/FIPS%20140-3%20IG.pdf#page=230).
-The compliance claim depends on the validated cryptographic module and its
-security policy. Before relying on runtime filtering alone, component owners
-must verify that the TLS implementation shipped in the OpenShift payload
-enforces the applicable policy for both default and explicitly configured
-groups.
+**FIPS mode constraint:** Upstream Go 1.26 drops standalone `X25519` in FIPS
+mode and [allows `X25519MLKEM768`](https://github.com/golang/go/blob/go1.26.0/src/crypto/tls/defaults_fips140.go#L33-L40)
+with a strict-mode handshake [fix in Go 1.26.3](https://github.com/golang/go/issues/78372).
+[NIST guidance](https://csrc.nist.gov/csrc/media/Projects/cryptographic-module-validation-program/documents/fips%20140-3/FIPS%20140-3%20IG.pdf#page=230)
+allows the hybrid when the module meets its validation requirements. Verify
+the shipped TLS implementation and module policy before relying on runtime
+filtering for default or explicitly configured groups.
 
 **Library-go update:** To support these defaults, the `TLSProfiles` mapping in
 [library-go](https://github.com/openshift/library-go) will be updated to include
